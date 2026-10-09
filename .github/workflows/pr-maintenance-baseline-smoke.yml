@@ -1,0 +1,90 @@
+# Same genuine Node SQLite import smoke on exact PR and merged upstream commits.
+name: PR 13735 Node smoke baseline control
+'on':
+  push:
+    branches:
+    - ci/pr-13735-baseline-smoke-20261009
+permissions:
+  contents: read
+env:
+  CI: 'true'
+  GITHUB_TOKEN: ''
+  GH_TOKEN: ''
+  CLINE_TELEMETRY_DISABLED: '1'
+  CLINE_VCR: playback
+  CLINE_NO_AUTO_UPDATE: '1'
+  NO_UPDATE_NOTIFIER: '1'
+jobs:
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: ubuntu-latest
+          node-version: 24.x
+          label: head
+          sha: fc39b8c6ffa9090cd2d54b1996f9ca12264c5a73
+        - os: ubuntu-latest
+          node-version: 24.x
+          label: baseline
+          sha: cfe9cadab99617d5013bf89f07b079d105057791
+    runs-on: ${{ matrix.os }}
+    name: Node SQLite smoke (${{ matrix.label }})
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        ref: ${{ matrix.sha }}
+        persist-credentials: false
+    - name: Verify exact PR source
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        set -euo pipefail
+        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+        printf "%s\n" "$SOURCE_SHA" > pr-validation-source.txt
+        git rev-parse HEAD
+      env:
+        SOURCE_SHA: ${{ matrix.sha }}
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+      with:
+        bun-version: 1.3.13
+    - name: Setup Node.js
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install dependencies
+      run: bun install
+    - name: Build SDK
+      id: build_sdk_step
+      run: bun run build:sdk
+    - name: Build CLI
+      id: build_cli_step
+      if: ${{ !cancelled() && steps.build_sdk_step.outcome == 'success' }}
+      run: bun -F @cline/cli build
+    - name: Smoke test SQLite under Node
+      timeout-minutes: 10
+      run: bun sdk/scripts/ci-node-smoke.ts
+      env:
+        npm_config_loglevel: silly
+        npm_config_logs_dir: ${{ runner.temp }}/ci-smoke-npm-logs
+    - name: Record final checkout status
+      if: ${{ always() }}
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        git status --short >> pr-validation-source.txt
+    - name: Save test evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: pr13735-smoke-${{ matrix.label }}
+        if-no-files-found: warn
+        path: |
+          pr-validation-source.txt
+          ${{ runner.temp }}/ci-smoke-npm-logs/
+        retention-days: 14
+    timeout-minutes: 20
+    permissions:
+      contents: read
