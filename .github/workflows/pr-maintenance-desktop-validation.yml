@@ -1,0 +1,96 @@
+# Desktop tests on the actual immutable PR merge SHA, distinct from exact-head SDK/editor tests.
+name: PR 13735 recorded-merge desktop validation
+'on':
+  push:
+    branches:
+    - ci/pr-13735-desktop-validation-20261009
+permissions:
+  contents: read
+env:
+  GITHUB_TOKEN: ''
+  GH_TOKEN: ''
+  CLINE_TELEMETRY_DISABLED: '1'
+jobs:
+  dmg-background:
+    name: Test DMG background tooling
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/examples/desktop-app
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        ref: bbf507f5145a274cf29af278316a1ced5e69d8b6
+        persist-credentials: false
+    - name: Verify recorded PR merge source
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        set -euo pipefail
+        test "$(git rev-parse HEAD)" = "bbf507f5145a274cf29af278316a1ced5e69d8b6"
+        git show -s --format="%H %P %s" HEAD > desktop-validation-source.txt
+        cat desktop-validation-source.txt
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+      with:
+        bun-version: 1.4.2
+    - name: Test DMG background tooling
+      run: bun run test:dmg-background
+    - name: Save source evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: pr13735-desktop-dmg-background
+        path: desktop-validation-source.txt
+        retention-days: 14
+    timeout-minutes: 10
+    permissions:
+      contents: read
+  windows-installer:
+    name: Test x86 installer against x64 sidecars
+    runs-on: windows-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/examples/desktop-app
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with:
+        ref: bbf507f5145a274cf29af278316a1ced5e69d8b6
+        persist-credentials: false
+    - name: Verify recorded PR merge source
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        set -euo pipefail
+        test "$(git rev-parse HEAD)" = "bbf507f5145a274cf29af278316a1ced5e69d8b6"
+        git show -s --format="%H %P %s" HEAD > desktop-validation-source.txt
+        cat desktop-validation-source.txt
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+      with:
+        bun-version: 1.4.2
+        no-cache: true
+    - name: Setup NSIS
+      shell: pwsh
+      run: |
+        $zip = Join-Path $env:RUNNER_TEMP 'nsis.zip'
+        Invoke-WebRequest 'https://github.com/tauri-apps/binary-releases/releases/download/nsis-3.11/nsis-3.11.zip' -OutFile $zip
+        if ((Get-FileHash $zip -Algorithm SHA1).Hash -ne 'EF7FF767E5CBD9EDD22ADD3A32C9B8F4500BB10D') {
+          throw 'NSIS distribution checksum mismatch'
+        }
+        Expand-Archive $zip -DestinationPath $env:RUNNER_TEMP
+        "MAKENSIS_PATH=$env:RUNNER_TEMP/nsis-3.11/makensis.exe" >> $env:GITHUB_ENV
+    - name: Test install and uninstall process cleanup
+      run: bun run test:windows-installer
+    - name: Save source evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: pr13735-desktop-windows-installer
+        path: desktop-validation-source.txt
+        retention-days: 14
+    permissions:
+      contents: read
