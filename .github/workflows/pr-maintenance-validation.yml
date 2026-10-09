@@ -1,6 +1,4 @@
-# Fork-only validation. Tests are copied from the three workflows at the exact PR SHA.
-# Quality failures stay visible without preventing independent platform test execution.
-# Qlty uploads are omitted; there are no publisher, release or deployment jobs.
+# Fork-only exact-source test validation; tar preserves coverage paths unsupported by artifact ZIP transport.
 name: PR 13735 exact-source validation
 'on':
   push:
@@ -56,19 +54,27 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         git status --short >> pr-validation-source.txt
+    - name: Package test evidence
+      if: ${{ always() }}
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        python - <<'PYTHON'
+        from pathlib import Path
+        import tarfile
+        paths = ["pr-validation-source.txt", "apps/vscode/test-results", "apps/vscode/coverage-unit", "apps/vscode/webview-ui/coverage", "apps/vscode/coverage", "apps/cli/src/tests/tui-traces"]
+        with tarfile.open("pr-validation-evidence.tar.gz", "w:gz") as archive:
+            for name in paths:
+                if Path(name).exists():
+                    archive.add(name, arcname=name)
+        PYTHON
     - name: Save test evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: pr13735-sdk-quality-${{ runner.os }}
         if-no-files-found: warn
-        path: |
-          pr-validation-source.txt
-          apps/vscode/test-results/
-          apps/vscode/coverage-unit/
-          apps/vscode/webview-ui/coverage/
-          apps/vscode/coverage/
-          apps/cli/src/tests/tui-traces/
+        path: pr-validation-evidence.tar.gz
         retention-days: 14
     timeout-minutes: 45
     permissions:
@@ -147,19 +153,27 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         git status --short >> pr-validation-source.txt
+    - name: Package test evidence
+      if: ${{ always() }}
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        python - <<'PYTHON'
+        from pathlib import Path
+        import tarfile
+        paths = ["pr-validation-source.txt", "apps/vscode/test-results", "apps/vscode/coverage-unit", "apps/vscode/webview-ui/coverage", "apps/vscode/coverage", "apps/cli/src/tests/tui-traces"]
+        with tarfile.open("pr-validation-evidence.tar.gz", "w:gz") as archive:
+            for name in paths:
+                if Path(name).exists():
+                    archive.add(name, arcname=name)
+        PYTHON
     - name: Save test evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: pr13735-sdk-test-${{ runner.os }}
         if-no-files-found: warn
-        path: |
-          pr-validation-source.txt
-          apps/vscode/test-results/
-          apps/vscode/coverage-unit/
-          apps/vscode/webview-ui/coverage/
-          apps/vscode/coverage/
-          apps/cli/src/tests/tui-traces/
+        path: pr-validation-evidence.tar.gz
         retention-days: 14
     timeout-minutes: 45
     permissions:
@@ -211,19 +225,27 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         git status --short >> pr-validation-source.txt
+    - name: Package test evidence
+      if: ${{ always() }}
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        python - <<'PYTHON'
+        from pathlib import Path
+        import tarfile
+        paths = ["pr-validation-source.txt", "apps/vscode/test-results", "apps/vscode/coverage-unit", "apps/vscode/webview-ui/coverage", "apps/vscode/coverage", "apps/cli/src/tests/tui-traces"]
+        with tarfile.open("pr-validation-evidence.tar.gz", "w:gz") as archive:
+            for name in paths:
+                if Path(name).exists():
+                    archive.add(name, arcname=name)
+        PYTHON
     - name: Save test evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: pr13735-extension-quality-${{ runner.os }}
         if-no-files-found: warn
-        path: |
-          pr-validation-source.txt
-          apps/vscode/test-results/
-          apps/vscode/coverage-unit/
-          apps/vscode/webview-ui/coverage/
-          apps/vscode/coverage/
-          apps/cli/src/tests/tui-traces/
+        path: pr-validation-evidence.tar.gz
         retention-days: 14
     timeout-minutes: 45
     permissions:
@@ -348,19 +370,27 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         git status --short >> pr-validation-source.txt
+    - name: Package test evidence
+      if: ${{ always() }}
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        python - <<'PYTHON'
+        from pathlib import Path
+        import tarfile
+        paths = ["pr-validation-source.txt", "apps/vscode/test-results", "apps/vscode/coverage-unit", "apps/vscode/webview-ui/coverage", "apps/vscode/coverage", "apps/cli/src/tests/tui-traces"]
+        with tarfile.open("pr-validation-evidence.tar.gz", "w:gz") as archive:
+            for name in paths:
+                if Path(name).exists():
+                    archive.add(name, arcname=name)
+        PYTHON
     - name: Save test evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: pr13735-extension-test-${{ runner.os }}
         if-no-files-found: warn
-        path: |
-          pr-validation-source.txt
-          apps/vscode/test-results/
-          apps/vscode/coverage-unit/
-          apps/vscode/webview-ui/coverage/
-          apps/vscode/coverage/
-          apps/cli/src/tests/tui-traces/
+        path: pr-validation-evidence.tar.gz
         retention-days: 14
     timeout-minutes: 45
     permissions:
@@ -421,19 +451,27 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         git status --short >> pr-validation-source.txt
+    - name: Package test evidence
+      if: ${{ always() }}
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        python - <<'PYTHON'
+        from pathlib import Path
+        import tarfile
+        paths = ["pr-validation-source.txt", "apps/vscode/test-results", "apps/vscode/coverage-unit", "apps/vscode/webview-ui/coverage", "apps/vscode/coverage", "apps/cli/src/tests/tui-traces"]
+        with tarfile.open("pr-validation-evidence.tar.gz", "w:gz") as archive:
+            for name in paths:
+                if Path(name).exists():
+                    archive.add(name, arcname=name)
+        PYTHON
     - name: Save test evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: pr13735-testing-platform-${{ runner.os }}
         if-no-files-found: warn
-        path: |
-          pr-validation-source.txt
-          apps/vscode/test-results/
-          apps/vscode/coverage-unit/
-          apps/vscode/webview-ui/coverage/
-          apps/vscode/coverage/
-          apps/cli/src/tests/tui-traces/
+        path: pr-validation-evidence.tar.gz
         retention-days: 14
     timeout-minutes: 20
     permissions:
@@ -529,18 +567,26 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         git status --short >> pr-validation-source.txt
+    - name: Package test evidence
+      if: ${{ always() }}
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        python - <<'PYTHON'
+        from pathlib import Path
+        import tarfile
+        paths = ["pr-validation-source.txt", "apps/vscode/test-results", "apps/vscode/coverage-unit", "apps/vscode/webview-ui/coverage", "apps/vscode/coverage", "apps/cli/src/tests/tui-traces"]
+        with tarfile.open("pr-validation-evidence.tar.gz", "w:gz") as archive:
+            for name in paths:
+                if Path(name).exists():
+                    archive.add(name, arcname=name)
+        PYTHON
     - name: Save test evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: pr13735-extension-e2e-${{ runner.os }}
         if-no-files-found: warn
-        path: |
-          pr-validation-source.txt
-          apps/vscode/test-results/
-          apps/vscode/coverage-unit/
-          apps/vscode/webview-ui/coverage/
-          apps/vscode/coverage/
-          apps/cli/src/tests/tui-traces/
+        path: pr-validation-evidence.tar.gz
         retention-days: 14
     name: extension-e2e (${{ matrix.runner }})
